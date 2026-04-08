@@ -1,10 +1,12 @@
 import { Controller, Get } from '@nestjs/common';
+import { TagsService } from './tags.service';
 
 @Controller('tags')
 export class TagsController {
+    constructor(private readonly tags: TagsService) {}
 
     @Get()
     all() {
-        return ['foo', 'bar', 'baz']
+        return this.tags.all()
     }
 }
