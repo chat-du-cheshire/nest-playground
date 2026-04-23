@@ -63,6 +63,10 @@ export class UserService {
         return user as UserEntity;
     }
 
+    async getUserById(id: number) {
+        return this.userRepo.findOneBy({id});
+    }
+
     private generateJwt(user: UserEntity) {
         return sign({
             id: user.id,
