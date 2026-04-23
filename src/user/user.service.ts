@@ -6,6 +6,8 @@ import { Repository } from 'typeorm';
 import { sign } from 'jsonwebtoken';
 import { JWT_SECRET } from '@app/config';
 import { UserResponse } from './types/user-response';
+import { LoginUserDto } from './dto/login-user.dto';
+import { compare } from 'bcrypt';
 
 @Injectable()
 export class UserService {
@@ -36,6 +38,29 @@ export class UserService {
                 token: this.generateJwt(user)
             }
         }
+    }
+
+    async login(dto: LoginUserDto)  {
+        const userByEmail = await this.userRepo.findOne(
+            {
+                where: {email: dto.email},
+                select: ['id', 'username', 'email', 'password', 'bio', 'image']
+            }, 
+        );
+        
+        if (!userByEmail) {
+            throw new HttpException('Invalid credentials', HttpStatus.UNAUTHORIZED);
+        }
+
+        const isCorrectPassword = await compare(dto.password, userByEmail.password);
+
+        if (!isCorrectPassword) {
+            throw new HttpException('Invalid credentials', HttpStatus.UNAUTHORIZED);
+        }
+        
+        const {password, ...user} = userByEmail;
+
+        return user as UserEntity;
     }
 
     private generateJwt(user: UserEntity) {
